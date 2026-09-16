@@ -1,0 +1,3 @@
+npx prettier --write .
+# keep the commit state as-is; do not auto-stage on a failed hook
+# npm test
