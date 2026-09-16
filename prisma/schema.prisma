@@ -51,7 +51,7 @@ model Conversation {
 model RefreshToken {
   id        String    @id @default(uuid())
   userId    String
-  token     String
+  token     String    @unique
   expiresAt DateTime
   deletedAt DateTime?
   createdAt DateTime  @default(now())
