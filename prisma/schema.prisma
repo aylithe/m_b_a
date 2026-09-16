@@ -12,33 +12,48 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String
-  email         String    @unique
-  passwordHash  String
-  role          String    @default("user")
-  tier          String    @default("free")
-  isActive      Boolean   @default(true)
-  deletedAt     DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         String    @default("user")
+  tier         String    @default("free")
+  isActive     Boolean   @default(true)
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@index([email])
 }
 
 model UsageLog {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   userId    String
   action    String
   tokens    Int
   costUsd   Float
   metadata  Json
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@index([userId])
 }
 
 model Conversation {
-  id        String   @id @default(uuid())   
+  id        String    @id @default(uuid())
   title     String
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  token     String
+  expiresAt DateTime
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
