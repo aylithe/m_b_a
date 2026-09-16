@@ -1,3 +1,6 @@
-npx prettier --write .
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx|js|jsx|json|md|css|scss)$' | grep -vE '^(node_modules/|dist/|build/|coverage/|\.next/|src/generated/|package-lock\.json|yarn\.lock|pnpm-lock\.yaml)$' || true)
+if [ -n "$STAGED_FILES" ]; then
+  npx prettier --write $STAGED_FILES
+fi
 # keep the commit state as-is; do not auto-stage on a failed hook
 # npm test
