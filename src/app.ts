@@ -1,4 +1,6 @@
-import express, {Request, Response} from 'express';
+import express, { Request, Response } from 'express';
+import './events/auth.events';
+
 const app = express();
 const port = 3000;
 
