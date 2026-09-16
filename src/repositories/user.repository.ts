@@ -9,23 +9,22 @@ export const userRepository = {
 
   async findByEmail(email: string) {
     return prisma.user.findUnique({
-      where: { email },
+      where: { email: email.toLowerCase().trim() },
     });
   },
 
-  async create(data: {
-    name: string;
-    email: string;
-    passwordHash: string;
-  }) {
+  async create(data: { name: string; email: string; passwordHash: string }) {
     return prisma.user.create({ data });
   },
 
-  async updateById(id: string, data: Partial<{
-    name: string;
-    email: string;
-    isActive: boolean;
-  }>) {
+  async updateById(
+    id: string,
+    data: Partial<{
+      name: string;
+      email: string;
+      isActive: boolean;
+    }>,
+  ) {
     return prisma.user.update({
       where: { id },
       data,

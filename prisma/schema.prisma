@@ -26,3 +26,19 @@ model User {
 
   @@index([email])
 }
+
+model UsageLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String
+  tokens    Int
+  costUsd   Float
+  metadata  Json
+
+  @@index([userId])
+}
+
+model Conversation {
+  id        String   @id @default(uuid())   
+  title     String
+}
