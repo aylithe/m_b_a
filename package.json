@@ -5,7 +5,7 @@
   "scripts": {
     "start": "ts-node src/app.ts",
     "dev": "nodemon --watch . --exec ts-node src/app.ts",
-    "prisma:migrate": "node -e \"const {spawnSync}=require('node:child_process'); const name=process.argv[2] ? process.argv.slice(2).join(' ') : 'auto_update'; const format=spawnSync('npx',['prisma','format'],{stdio:'inherit',shell:true}); if (format.status !== 0) process.exit(format.status ?? 1); const generate=spawnSync('npx',['prisma','generate'],{stdio:'inherit',shell:true}); if (generate.status !== 0) process.exit(generate.status ?? 1); const migrate=spawnSync('npx',['prisma','migrate','dev','--name',name],{stdio:'inherit',shell:true}); process.exit(migrate.status ?? 0);\"",
+    "prisma:migrate": "node -e \"const {spawnSync}=require('node:child_process'); const name=process.argv[1] ? process.argv.slice(1).join(' ') : 'auto_update'; const format=spawnSync('npx',['prisma','format'],{stdio:'inherit',shell:true}); if (format.status !== 0) process.exit(format.status ?? 1); const generate=spawnSync('npx',['prisma','generate'],{stdio:'inherit',shell:true}); if (generate.status !== 0) process.exit(generate.status ?? 1); const migrate=spawnSync('npx',['prisma','migrate','dev','--name',name],{stdio:'inherit',shell:true}); process.exit(migrate.status ?? 0);\"",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "echo \"Error: no test specified\" && exit 1",
