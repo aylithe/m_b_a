@@ -1,7 +1,12 @@
 import crypto from 'crypto';
 import { appEvents } from '../lib/events';
 import { AUTH_EVENTS } from '../events/auth.events';
-import { refreshTokenRepository, userRepository } from '../repositories/index';
+import {
+  refreshTokenRepository,
+  userRepository,
+  roleRepository,
+  userRoleRepository,
+} from '../repositories/index';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../lib/tokens';
 import { hashPassword, verifyPassword } from '../lib/password';
 
@@ -16,6 +21,15 @@ export async function register(data: { email: string; name: string; password: st
     passwordHash,
     name: data.name,
   });
+
+  const defaultRole = await roleRepository.findDefault();
+
+  if (defaultRole) {
+    await userRoleRepository.create({
+      userId: user.id,
+      roleId: defaultRole.id,
+    });
+  }
 
   // Emit and move on. Don't wait for listeners.
   appEvents.emit(AUTH_EVENTS.USER_REGISTERED, {
