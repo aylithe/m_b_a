@@ -24,6 +24,7 @@ model User {
   updatedAt     DateTime       @updatedAt
   refreshTokens RefreshToken[]
   userRoles     UserRole[]
+  documents     Document[]
 
   @@index([email])
 }
@@ -108,4 +109,15 @@ model RolePermission {
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   @@id([roleId, permissionId])
+}
+
+model Document {
+  id     String @id @default(uuid())
+  userId String
+  status String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId]) // Fast: WHERE userId = ?
+  @@index([status]) // Fast: WHERE status = 'READY'
+  @@index([userId, status]) // Fast: WHERE userId = ? AND status = ?
 }
