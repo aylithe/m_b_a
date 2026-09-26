@@ -39,4 +39,10 @@ export const userRoleRepository = {
       },
     });
   },
+
+  async deleteUserRole({ userId, roleId }: { userId: string; roleId: string }) {
+    await prisma.userRole.deleteMany({
+      where: { userId, roleId },
+    });
+  },
 };
