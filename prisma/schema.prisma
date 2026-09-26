@@ -45,10 +45,29 @@ model UsageLog {
 
 model Conversation {
   id        String    @id @default(uuid())
+  userId    String
   title     String
   deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  messages  Message[]
+
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  roleId         String
+  title          String
+  content        String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           Role         @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  deletedAt      DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([conversationId])
 }
 
 model RefreshToken {
@@ -75,6 +94,7 @@ model Role {
 
   users       UserRole[]
   permissions RolePermission[]
+  messages    Message[]
 }
 
 model Permission {
@@ -112,10 +132,15 @@ model RolePermission {
 }
 
 model Document {
-  id     String @id @default(uuid())
-  userId String
-  status String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String   @id @default(uuid())
+  userId     String
+  status     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title      String
+  filename   String
+  chunkCount Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([userId]) // Fast: WHERE userId = ?
   @@index([status]) // Fast: WHERE status = 'READY'
