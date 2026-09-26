@@ -9,6 +9,7 @@ import {
 } from '../repositories/index';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../lib/tokens';
 import { hashPassword, verifyPassword } from '../lib/password';
+import { UnauthorizedError } from '../lib/errors';
 
 const REFRESH_TOKEN_EXPIRATION_PERIOD = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -51,7 +52,7 @@ export async function login(data: { email: string; password: string; deviceInfo?
       deviceInfo: data.deviceInfo,
       reason: 'user_not_found',
     });
-    throw new Error('Invalid credentials');
+    throw new UnauthorizedError('Invalid credentials');
   }
 
   const valid = await verifyPassword(data.password, user.passwordHash);
@@ -61,7 +62,7 @@ export async function login(data: { email: string; password: string; deviceInfo?
       deviceInfo: data.deviceInfo,
       reason: 'wrong_password',
     });
-    throw new Error('Invalid credentials');
+    throw new UnauthorizedError('Invalid credentials');
   }
 
   const accessToken = generateAccessToken(user);
