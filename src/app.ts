@@ -4,6 +4,7 @@ import authRoutes from './routes/auth';
 import documentRoutes from './routes/document';
 import adminRoutes from './routes/admin';
 import './events/auth.events';
+import './events/admin.events';
 import { errorHandler } from './middleware/errorHandler';
 
 const app = express();

@@ -3,6 +3,9 @@ import { authenticate } from '../middleware/auth';
 import { requirePermissions } from '../middleware/authorize';
 import { getAllRoles } from '../services/role.services';
 import { assignRoleToUser } from '../services/admin.services';
+import { roleRepository, userRoleRepository } from '../repositories';
+import { NotFoundError } from '../lib/errors';
+import { appEvents } from '../lib/events';
 
 const router = Router();
 router.use(authenticate);
@@ -39,6 +42,33 @@ router.post('/users/:userId/roles', async (req, res, next) => {
     res.json({
       success: true,
       data: { message: `Role '${roleName}' assigned to user` },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete('/users/:userId/roles/:roleName', async (req, res, next) => {
+  try {
+    const { userId, roleName } = req.params;
+
+    const role = await roleRepository.findByName(roleName);
+    if (!role) throw new NotFoundError('Role not found');
+
+    await userRoleRepository.deleteUserRole({
+      userId,
+      roleId: role.id,
+    });
+
+    appEvents.emit('admin:role-revoked', {
+      targetUserId: userId,
+      roleName,
+      revokedBy: req.user!.id,
+    });
+
+    res.json({
+      success: true,
+      data: { message: `Role '${roleName}' revoked` },
     });
   } catch (error) {
     next(error);
