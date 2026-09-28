@@ -7,13 +7,14 @@ import {
   documentParamsSchema,
   listDocumentsSchema,
 } from '../validators/document.validator';
-import { getDocument, listDocuments, deleteDocument } from '../services/document.services';
+import {
+  getDocument,
+  listDocuments,
+  deleteDocument,
+  createDocument,
+} from '../services/document.services';
 
 const router = Router();
-
-const createDocument = (_req: Request, res: Response) => {
-  res.status(501).json({ success: false, message: 'createDocument not implemented yet' });
-};
 
 router.use(authenticate);
 
@@ -57,7 +58,26 @@ router.post(
   '/',
   requirePermissions('documents:create'),
   validate(createDocumentSchema),
-  createDocument,
+  async (req: Request, res: Response, next) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
+      }
+
+      const { title, content, description } = req.body;
+      const document = await createDocument({
+        userId,
+        title,
+        content,
+        description,
+      });
+
+      res.status(201).json({ success: true, data: document });
+    } catch (error) {
+      next(error);
+    }
+  },
 );
 
 router.get('/:id', validate(documentParamsSchema), (req: Request, res: Response, next) => {

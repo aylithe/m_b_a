@@ -2,6 +2,18 @@ import { prisma } from '../lib/prisma';
 import { ListDocumentsOptions } from '../services/document.services';
 
 export const documentRepository = {
+  async create(data: { userId: string; title: string; content: string }) {
+    return prisma.document.create({
+      data: {
+        userId: data.userId,
+        title: data.title,
+        filename: data.title.toLowerCase().replace(/\s+/g, '-'),
+        content: data.content,
+        status: 'pending',
+        chunkCount: 0,
+      },
+    });
+  },
   async findById(id: string) {
     return prisma.document.findUnique({
       where: { id, deletedAt: null },
