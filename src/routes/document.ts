@@ -7,26 +7,50 @@ import {
   documentParamsSchema,
   listDocumentsSchema,
 } from '../validators/document.validator';
-import { getDocument } from '../services/document.services';
+import { getDocument, listDocuments, deleteDocument } from '../services/document.services';
 
 const router = Router();
-
-const listDocuments = (_req: Request, res: Response) => {
-  res.status(501).json({ success: false, message: 'listDocuments not implemented yet' });
-};
 
 const createDocument = (_req: Request, res: Response) => {
   res.status(501).json({ success: false, message: 'createDocument not implemented yet' });
 };
 
-const deleteDocument = (_req: Request, res: Response) => {
-  res.status(501).json({ success: false, message: 'deleteDocument not implemented yet' });
-};
-
 router.use(authenticate);
 
 // Anyone with documents:read can list documents
-router.get('/', requirePermissions('documents:read'), validate(listDocumentsSchema), listDocuments);
+router.get(
+  '/',
+  requirePermissions('documents:read'),
+  validate(listDocumentsSchema),
+  async (req: Request, res: Response, next) => {
+    try {
+      const rawPage = Number(req.query.page ?? 1);
+      const rawLimit = Number(req.query.limit ?? 20);
+      const rawStatus = typeof req.query.status === 'string' ? req.query.status : undefined;
+      const rawSearch = typeof req.query.search === 'string' ? req.query.search : undefined;
+      const rawSortBy = typeof req.query.sortBy === 'string' ? req.query.sortBy : 'createdAt';
+      const rawSortOrder = typeof req.query.sortOrder === 'string' ? req.query.sortOrder : 'desc';
+
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
+      }
+
+      const documents = await listDocuments(userId, {
+        page: rawPage,
+        limit: rawLimit,
+        status: rawStatus,
+        search: rawSearch,
+        sortBy: rawSortBy as 'createdAt' | 'title' | 'chunkCount',
+        sortOrder: rawSortOrder as 'asc' | 'desc',
+      });
+
+      res.status(200).json({ success: true, data: documents });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
 
 // Only documents:create can upload
 router.post(
@@ -46,7 +70,10 @@ router.delete(
   '/:id',
   requirePermissions('admin:documents:delete', 'documents:delete'),
   validate(documentParamsSchema),
-  deleteDocument,
+  async (req: Request, res: Response, next) => {
+    await deleteDocument(String(req.params!.id), req.user!.id);
+    res.status(200).json({ success: true, message: 'Document deleted successfully' });
+  },
 );
 
 export default router;
