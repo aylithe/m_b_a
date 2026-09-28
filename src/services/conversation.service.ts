@@ -1,4 +1,4 @@
-import { conversationRepository } from '../repositories';
+import { conversationRepository, documentRepository } from '../repositories';
 
 export async function listConversations(userId: string, options: { page: number; limit: number }) {
   const { page, limit } = options;
@@ -22,4 +22,18 @@ export async function listConversations(userId: string, options: { page: number;
       total,
     },
   };
+}
+
+export async function sendMessage(data: {
+  conversationId: string;
+  userId: string;
+  content: string;
+  documentId?: string;
+}) {
+  const doc = await documentRepository.findById(data?.documentId || '');
+  if (!doc) {
+    throw new Error('Document not found');
+  }
+
+  return conversationRepository.messageSaveTransaction(data);
 }

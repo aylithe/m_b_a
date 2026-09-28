@@ -56,3 +56,22 @@ export async function listDocuments(userId: string, options: ListDocumentsOption
     meta: { page, limit, total },
   };
 }
+
+export async function deleteDocument(documentId: string, userId: string) {
+  const doc = await documentRepository.findById(documentId);
+
+  if (!doc) {
+    throw new NotFoundError('Document not found');
+  }
+
+  // Resource ownership check
+  if (doc.userId !== userId) {
+    // Admins can delete everything
+    const permissions = await getUserPermissions(userId);
+    if (!permissions.includes('users:manage')) {
+      throw new NotFoundError('Document not found');
+    }
+  }
+
+  return documentRepository.deleteDocument(documentId, userId);
+}
