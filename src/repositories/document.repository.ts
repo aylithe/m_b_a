@@ -4,7 +4,7 @@ import { ListDocumentsOptions } from '../services/document.services';
 export const documentRepository = {
   async findById(id: string) {
     return prisma.document.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
     });
   },
   async listDocumentsByUserId(where: ListDocumentsOptions, options: ListDocumentsOptions) {
@@ -27,5 +27,11 @@ export const documentRepository = {
   },
   async countDocumentsByUserId(where: ListDocumentsOptions) {
     return prisma.document.count({ where });
+  },
+  async deleteDocument(id: string, userId: string) {
+    return prisma.document.update({
+      where: { id },
+      data: { deletedAt: new Date(), deletedBy: userId },
+    });
   },
 };
