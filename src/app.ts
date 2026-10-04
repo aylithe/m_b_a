@@ -7,6 +7,8 @@ import './events/auth.events';
 import './events/admin.events';
 import './events/document.events';
 import { errorHandler } from './middleware/errorHandler';
+import './queues/document.worker';
+import { bullBoardAdapter } from './config/bull-board';
 
 const app = express();
 const port = 3000;
@@ -22,6 +24,8 @@ app.get('/health', (req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/documents', documentRoutes);
 app.use('/api/v1/admin', adminRoutes);
+
+app.use('/admin/queues', bullBoardAdapter.getRouter());
 
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
