@@ -56,16 +56,19 @@ model Conversation {
 }
 
 model Message {
-  id             String       @id @default(uuid())
-  conversationId String
-  documentId     String
-  content        String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  document       Document     @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  deletedAt      DateTime?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  role           String?
+  id               String       @id @default(uuid())
+  conversationId   String
+  documentId       String
+  content          String
+  promptTokens     Int?
+  completionTokens Int?
+  costUsd          Float?
+  conversation     Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  document         Document     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  deletedAt        DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  role             String?
 
   @@index([conversationId])
 }
@@ -138,14 +141,29 @@ model Document {
   title      String
   filename   String
   content    String
+  error      Json?
   chunkCount Int
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   deletedAt  DateTime?
   deletedBy  String?
   messages   Message[]
+  chunks     Chunk[]
 
   @@index([userId]) // Fast: WHERE userId = ?
   @@index([status]) // Fast: WHERE status = 'READY'
   @@index([userId, status]) // Fast: WHERE userId = ? AND status = ?
+}
+
+model Chunk {
+  id         String    @id @default(uuid())
+  documentId String
+  document   Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  index      Int
+  content    String
+  tokenCount Int
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+  deletedBy  String?
 }
