@@ -9,9 +9,23 @@ import './events/document.events';
 import { errorHandler } from './middleware/errorHandler';
 import './queues/document.worker';
 import { bullBoardAdapter } from './config/bull-board';
+import { verifyWebhookSignature } from './middleware/verifyWebhook';
 
 const app = express();
 const port = 3000;
+
+const secret = process.env.WEBHOOK_SECRET;
+
+app.use(
+  '/webhooks',
+  verifyWebhookSignature(secret!, 'x-signature'),
+  express.raw({
+    type: 'application/json',
+    verify: (req: any, res, buf) => {
+      req.rawBody = buf;
+    },
+  }),
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
