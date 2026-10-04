@@ -12,6 +12,7 @@ import {
   listDocuments,
   deleteDocument,
   createDocument,
+  activeDocumentJob,
 } from '../services/document.services';
 
 const router = Router();
@@ -93,6 +94,24 @@ router.delete(
   async (req: Request, res: Response, next) => {
     await deleteDocument(String(req.params!.id), req.user!.id);
     res.status(200).json({ success: true, message: 'Document deleted successfully' });
+  },
+);
+
+router.get(
+  '/:id/processing-status',
+  authenticate,
+  requirePermissions('documents:read'),
+  async (req, res) => {
+    const { activeJob, doc } = await activeDocumentJob(String(req.params.id), req.user!.id);
+
+    res.json({
+      success: true,
+      data: {
+        status: doc.status,
+        error: doc.error,
+        progress: activeJob ? await activeJob.progress : null,
+      },
+    });
   },
 );
 

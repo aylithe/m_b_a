@@ -46,4 +46,10 @@ export const documentRepository = {
       data: { deletedAt: new Date(), deletedBy: userId },
     });
   },
+  async findActiveDocumentJob(documentId: string) {
+    return prisma.document.findUnique({
+      where: { id: documentId },
+      select: { id: true, status: true, error: true, userId: true },
+    });
+  },
 };

@@ -3,6 +3,7 @@ import { documentRepository } from '../repositories';
 import { NotFoundError } from '../lib/errors';
 import { appEvents } from '../lib/events';
 import { DOC_EVENTS } from '../events/document.events';
+import { documentQueue, queueDocumentForProcessing } from '../queues/document.queue';
 
 export async function getDocument(documentId: string, userId: string) {
   const doc = await documentRepository.findById(documentId);
@@ -43,9 +44,21 @@ export async function createDocument(data: {
     userId: data.userId,
     documentId: doc.id,
     title: doc.title,
-    //fileSizeBytes: doc.fileSizeBytes,
+    filename: data.title.toLowerCase().replace(/\s+/g, '-'),
+    content: data.content,
+    status: 'pending',
   });
-  return doc;
+  const jobId = await queueDocumentForProcessing(doc.id, data.userId);
+
+  appEvents.emit('doc:created', {
+    userId: data.userId,
+    documentId: doc.id,
+    title: doc.title,
+  });
+
+  // Return 202 Accepted (not 201 Created)
+  // The document exists but isn't ready yet
+  return { document: doc, jobId };
 }
 
 export async function listDocuments(userId: string, options: ListDocumentsOptions) {
@@ -99,4 +112,20 @@ export async function deleteDocument(documentId: string, userId: string) {
     title: deletedDoc.title,
   });
   return deletedDoc;
+}
+
+export async function activeDocumentJob(documentId: string, userId: string) {
+  const doc = await documentRepository.findActiveDocumentJob(documentId);
+
+  if (!doc || doc.userId !== userId) {
+    throw new NotFoundError('Document not found');
+  }
+
+  // Try to find the active job for this document
+  const jobs = await documentQueue.getJobs(['active', 'waiting']);
+  const activeJob = jobs.find((j) => j.data.documentId === documentId);
+  return {
+    activeJob,
+    doc,
+  };
 }
