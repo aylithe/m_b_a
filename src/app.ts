@@ -6,6 +6,7 @@ import adminRoutes from './routes/admin';
 import './events/auth.events';
 import './events/admin.events';
 import './events/document.events';
+import './events/cache.events';
 import { errorHandler } from './middleware/errorHandler';
 import './queues/document.worker';
 import { bullBoardAdapter } from './config/bull-board';

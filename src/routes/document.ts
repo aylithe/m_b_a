@@ -14,6 +14,7 @@ import {
   createDocument,
   activeDocumentJob,
 } from '../services/document.services';
+import { conditionalGet } from '../middleware/etag';
 
 const router = Router();
 
@@ -81,10 +82,15 @@ router.post(
   },
 );
 
-router.get('/:id', validate(documentParamsSchema), (req: Request, res: Response, next) => {
-  const doc = getDocument(String(req.params!.id), req.user!.id);
-  res.status(200).json({ success: true, data: doc });
-});
+router.get(
+  '/:id',
+  conditionalGet(),
+  validate(documentParamsSchema),
+  (req: Request, res: Response, next) => {
+    const doc = getDocument(String(req.params!.id), req.user!.id);
+    res.status(200).json({ success: true, data: doc });
+  },
+);
 
 // Only documents:delete can delete (admin only)
 router.delete(

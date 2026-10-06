@@ -20,6 +20,20 @@ export const userRoleRepository = {
       },
     });
   },
+  async findRolesByUserId(userId: string) {
+    return prisma.userRole.findMany({
+      where: { userId },
+      include: {
+        role: {
+          include: {
+            permissions: {
+              include: { permission: true },
+            },
+          },
+        },
+      },
+    });
+  },
   async upsertUserRole({
     userId,
     roleId,
