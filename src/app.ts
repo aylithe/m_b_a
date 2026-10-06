@@ -7,10 +7,12 @@ import './events/auth.events';
 import './events/admin.events';
 import './events/document.events';
 import './events/cache.events';
+import './events/security.events';
 import { errorHandler } from './middleware/errorHandler';
 import './queues/document.worker';
 import { bullBoardAdapter } from './config/bull-board';
 import { verifyWebhookSignature } from './middleware/verifyWebhook';
+import { authLimiter, apiLimiter } from './middleware/rateLimiter';
 
 const app = express();
 const port = 3000;
@@ -39,6 +41,12 @@ app.get('/health', (req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/documents', documentRoutes);
 app.use('/api/v1/admin', adminRoutes);
+
+// Auth routes: IP-based limiting
+app.use('/api/v1/auth', authLimiter, authRoutes);
+
+// All authenticated API routes: general limiter
+app.use('/api/v1', apiLimiter);
 
 app.use('/admin/queues', bullBoardAdapter.getRouter());
 

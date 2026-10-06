@@ -15,6 +15,7 @@ import {
   activeDocumentJob,
 } from '../services/document.services';
 import { conditionalGet } from '../middleware/etag';
+import { uploadLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
 
@@ -58,6 +59,7 @@ router.get(
 // Only documents:create can upload
 router.post(
   '/',
+  uploadLimiter,
   requirePermissions('documents:create'),
   validate(createDocumentSchema),
   async (req: Request, res: Response, next) => {
