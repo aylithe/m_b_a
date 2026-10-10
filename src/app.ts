@@ -3,6 +3,7 @@ import express from 'express';
 import authRoutes from './routes/auth';
 import documentRoutes from './routes/document';
 import adminRoutes from './routes/admin';
+import healthRoutes from './routes/health';
 import './events/auth.events';
 import './events/admin.events';
 import './events/document.events';
@@ -38,10 +39,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
 app.use(metricsMiddleware);
-
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
+app.use(healthRoutes);
 
 app.get('/metrics', async (_req, res) => {
   res.set('Content-Type', metricsRegistry.contentType);
