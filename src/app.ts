@@ -15,9 +15,11 @@ import { verifyWebhookSignature } from './middleware/verifyWebhook';
 import { authLimiter, apiLimiter } from './middleware/rateLimiter';
 import { requestLogger } from './middleware/requestLogger';
 import { logger } from './lib/logger';
+import { metricsRegistry } from './lib/metrics';
+import { metricsMiddleware } from './middleware/metrics';
 
 const app = express();
-const port = 3000;
+const port = 3001;
 
 const secret = process.env.WEBHOOK_SECRET;
 
@@ -35,9 +37,15 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
+app.use(metricsMiddleware);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+app.get('/metrics', async (_req, res) => {
+  res.set('Content-Type', metricsRegistry.contentType);
+  res.send(await metricsRegistry.metrics());
 });
 
 // API v1
