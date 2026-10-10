@@ -1,4 +1,5 @@
 import { prisma } from '../src/lib/prisma';
+import { logger } from '../src/lib/logger';
 
 async function seedRBAC() {
   // Define permissions
@@ -118,12 +119,14 @@ async function seedRBAC() {
     }
   }
 
-  console.log('RBAC seeded: 3 roles, 9 permissions');
+  logger.info('RBAC seeded', { roles: 3, permissions: 9 });
 }
 
 seedRBAC()
   .catch((error) => {
-    console.error('Seed failed:', error);
+    logger.error('Seed failed', {
+      error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
+    });
     process.exit(1);
   })
   .finally(async () => {

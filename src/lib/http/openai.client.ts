@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
+import { logger } from '../logger';
 
 export const openaiClient: AxiosInstance = axios.create({
   baseURL: 'https://api.openai.com/v1',
@@ -13,7 +14,11 @@ export const openaiClient: AxiosInstance = axios.create({
 openaiClient.interceptors.request.use((config) => {
   const startTime = Date.now();
   (config as any).metadata = { startTime };
-  console.log(`→ OpenAI ${config.method?.toUpperCase()} ${config.url}`);
+  logger.debug('OpenAI request sent', {
+    method: config.method?.toUpperCase(),
+    url: config.url,
+    startTime,
+  });
   return config;
 });
 
@@ -25,10 +30,17 @@ openaiClient.interceptors.response.use(
     const remaining = parseInt(response.headers['x-ratelimit-remaining-requests'] || '999');
 
     if (remaining < 50) {
-      console.warn(`OpenAI rate limit getting low: ${remaining} remaining`);
+      logger.warn('OpenAI rate limit getting low', {
+        remaining,
+        url: response.config.url,
+      });
     }
 
-    console.log(`← OpenAI ${response.status} ${response.config.url} (${duration}ms)`);
+    logger.debug('OpenAI response received', {
+      status: response.status,
+      url: response.config.url,
+      durationMs: duration,
+    });
     return response;
   },
   (error) => {
@@ -37,15 +49,25 @@ openaiClient.interceptors.response.use(
 
     if (error.response) {
       // Server responded with error status
-      console.error(
-        `✕ OpenAI ${error.response.status} ${error.config?.url} (${duration}ms):`,
-        error.response.data,
-      );
+      logger.error('OpenAI request failed', {
+        status: error.response.status,
+        url: error.config?.url,
+        durationMs: duration,
+        responseData: error.response.data,
+      });
     } else if (error.request) {
       // No response received (timeout, network error)
-      console.error(`✕ OpenAI no response ${error.config?.url} (${duration}ms):`, error.message);
+      logger.error('OpenAI request failed without response', {
+        url: error.config?.url,
+        durationMs: duration,
+        message: error.message,
+      });
     } else {
-      console.error(`✕ OpenAI request setup error:`, error.message);
+      logger.error('OpenAI request setup error', {
+        url: error.config?.url,
+        durationMs: duration,
+        message: error.message,
+      });
     }
 
     return Promise.reject(error);

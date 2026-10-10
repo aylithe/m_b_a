@@ -1,8 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { cacheRedis } from '../lib/cache';
+import { logger } from '../lib/logger';
 
 export async function trackSuspiciousActivity(req: Request, res: Response, next: NextFunction) {
   const userId = (req as any).user?.id;
+  const correlationId = (req as any).correlationId;
   if (!userId) return next();
 
   // Track unique documents accessed in last 5 minutes
@@ -16,7 +18,13 @@ export async function trackSuspiciousActivity(req: Request, res: Response, next:
 
       const uniqueDocs = await cacheRedis.scard(key);
       if (uniqueDocs > 50) {
-        console.warn(`Suspicious: user ${userId} accessed ${uniqueDocs} unique documents in 5 min`);
+        logger.warn('Suspicious document access burst', {
+          correlationId,
+          userId,
+          documentId: docId,
+          uniqueDocs,
+          windowSeconds: 300,
+        });
         // In production: emit event, alert admin, temporarily throttle
       }
     }

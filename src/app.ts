@@ -13,6 +13,8 @@ import './queues/document.worker';
 import { bullBoardAdapter } from './config/bull-board';
 import { verifyWebhookSignature } from './middleware/verifyWebhook';
 import { authLimiter, apiLimiter } from './middleware/rateLimiter';
+import { requestLogger } from './middleware/requestLogger';
+import { logger } from './lib/logger';
 
 const app = express();
 const port = 3000;
@@ -32,8 +34,9 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(requestLogger);
 
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
@@ -51,7 +54,7 @@ app.use('/api/v1', apiLimiter);
 app.use('/admin/queues', bullBoardAdapter.getRouter());
 
 app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+  logger.info('Server started', { port, url: `http://localhost:${port}` });
 });
 
 // 404 handler for unknown routes

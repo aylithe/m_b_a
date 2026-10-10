@@ -4,12 +4,18 @@ import { prisma } from '../lib/prisma';
 import { appEvents } from '../lib/events';
 import { estimateTokens, splitIntoChunks } from '../lib/chunker';
 import { deadLetterQueue } from './dead-letter.queue';
+import { logger } from '../lib/logger';
 
 const worker = new Worker(
   'document-processing',
   async (job: Job) => {
     const { documentId, userId } = job.data;
-    console.log(`Processing document ${documentId} (attempt ${job.attemptsMade + 1})`);
+    logger.info('Processing document', {
+      jobId: job.id,
+      documentId,
+      userId,
+      attempt: job.attemptsMade + 1,
+    });
 
     // Step 1: Fetch the document content
     const doc = await prisma.document.findUniqueOrThrow({
@@ -79,16 +85,32 @@ const worker = new Worker(
 
 // Event listeners for logging
 worker.on('completed', (job) => {
-  console.log(`Job ${job.id} completed: ${job.returnvalue?.chunks} chunks`);
+  logger.info('Document job completed', {
+    jobId: job.id,
+    documentId: job.data?.documentId,
+    userId: job.data?.userId,
+    chunks: job.returnvalue?.chunks,
+  });
 });
 
 worker.on('failed', async (job, error) => {
-  console.error(`Job ${job?.id} failed (attempt ${job?.attemptsMade}):`, error.message);
+  logger.error('Document job failed', {
+    jobId: job?.id,
+    documentId: job?.data?.documentId,
+    userId: job?.data?.userId,
+    attempt: job?.attemptsMade,
+    error: error.message,
+  });
   if (!job) return;
 
   // Check if all attempts exhausted
   if (job.attemptsMade >= (job.opts.attempts ?? 3)) {
-    console.error(`Job ${job.id} permanently failed. Moving to DLQ.`);
+    logger.error('Document job permanently failed; moving to DLQ', {
+      jobId: job.id,
+      documentId: job.data?.documentId,
+      userId: job.data?.userId,
+      attempts: job.attemptsMade,
+    });
 
     await deadLetterQueue.add('failed-document', {
       originalJobId: job.id,
@@ -102,7 +124,9 @@ worker.on('failed', async (job, error) => {
 });
 
 worker.on('error', (error) => {
-  console.error('Worker error:', error);
+  logger.error('Document worker error', {
+    error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
+  });
 });
 
 export { worker };

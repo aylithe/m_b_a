@@ -1,4 +1,5 @@
 import { appEvents } from '../lib/events';
+import { logger } from '../lib/logger';
 import { usageLogRepository } from '../repositories/usage.log.repository';
 
 export const DOC_EVENTS = {
@@ -21,7 +22,12 @@ appEvents.on(DOC_EVENTS.CREATED, async (data) => {
       },
     });
   } catch (error) {
-    console.error('Failed to log document creation:', error);
+    logger.error('Failed to log document creation', {
+      userId: data.createdBy,
+      documentId: data.documentId,
+      title: data.title,
+      error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
+    });
   }
 });
 
@@ -39,6 +45,11 @@ appEvents.on(DOC_EVENTS.DELETED, async (data) => {
       },
     });
   } catch (error) {
-    console.error('Failed to log document deletion:', error);
+    logger.error('Failed to log document deletion', {
+      userId: data.deletedBy,
+      documentId: data.documentId,
+      title: data.title,
+      error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
+    });
   }
 });

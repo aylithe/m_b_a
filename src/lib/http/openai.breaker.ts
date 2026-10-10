@@ -1,6 +1,7 @@
 import CircuitBreaker from 'opossum';
 import { openaiClient } from './openai.client';
 import { withRetry } from './retry';
+import { logger } from '../logger';
 // The function we're protecting
 
 async function callOpenAI(path: string, body: any) {
@@ -23,9 +24,11 @@ openaiBreaker.fallback(() => {
 
 // Visibility into state changes
 openaiBreaker.on('open', () =>
-  console.warn('⚠️  OpenAI circuit breaker OPENED — requests will fail fast'),
+  logger.warn('OpenAI circuit breaker opened; requests will fail fast'),
 );
 openaiBreaker.on('halfOpen', () =>
-  console.warn('⚠️  OpenAI circuit breaker HALF-OPEN — testing recovery'),
+  logger.warn('OpenAI circuit breaker half-open; testing recovery'),
 );
-openaiBreaker.on('close', () => console.log('✅ OpenAI circuit breaker CLOSED — normal operation'));
+openaiBreaker.on('close', () =>
+  logger.info('OpenAI circuit breaker closed; normal operation resumed'),
+);

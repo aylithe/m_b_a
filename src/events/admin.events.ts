@@ -1,5 +1,6 @@
 import { appEvents } from '../lib/events';
 import { prisma } from '../lib/prisma';
+import { logger } from '../lib/logger';
 import { usageLogRepository } from '../repositories';
 
 appEvents.on('admin:role-assigned', async (data) => {
@@ -16,7 +17,12 @@ appEvents.on('admin:role-assigned', async (data) => {
       },
     });
   } catch (error) {
-    console.error('Failed to log role assignment:', error);
+    logger.error('Failed to log role assignment', {
+      assignedBy: data.assignedBy,
+      targetUserId: data.targetUserId,
+      roleName: data.roleName,
+      error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
+    });
   }
 });
 
@@ -34,6 +40,11 @@ appEvents.on('admin:role-revoked', async (data) => {
       },
     });
   } catch (error) {
-    console.error('Failed to log role revocation:', error);
+    logger.error('Failed to log role revocation', {
+      revokedBy: data.revokedBy,
+      targetUserId: data.targetUserId,
+      roleName: data.roleName,
+      error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
+    });
   }
 });

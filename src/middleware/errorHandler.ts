@@ -1,10 +1,19 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../lib/errors';
+import { logger } from '../lib/logger';
 
 export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
+  const correlationId = (req as any).correlationId;
+
   // Operational error: we created this intentionally
   if (err instanceof AppError) {
-    console.warn(`[${err.code}] ${err.message}`, err.details ? { details: err.details } : '');
+    logger.warn('AppError handled', {
+      correlationId,
+      code: err.code,
+      message: err.message,
+      details: err.details,
+      statusCode: err.statusCode,
+    });
 
     return res.status(err.statusCode).json({
       success: false,
@@ -17,7 +26,11 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
   }
 
   // Programming error: this is a bug
-  console.error('Unhandled error:', err);
+  logger.error('Unhandled error', {
+    correlationId,
+    message: err.message,
+    stack: err.stack,
+  });
 
   return res.status(500).json({
     success: false,

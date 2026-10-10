@@ -1,11 +1,16 @@
 import { Router } from 'express';
 import * as authService from '../services/auth.services';
+import { logger } from '../lib/logger';
 
 const router = Router();
 
 router.post('/register', async (req, res, next) => {
   try {
-    console.log(req.body, 'REQ BODY LOGGG');
+    logger.info('Register request received', {
+      correlationId: (req as any).correlationId,
+      email: req.body?.email,
+      userAgent: req.headers['user-agent'],
+    });
     const user = await authService.register(req.body);
     res.status(201).json({ user });
   } catch (error) {
