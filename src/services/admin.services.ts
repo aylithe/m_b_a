@@ -6,10 +6,12 @@ export async function assignRoleToUser({
   userId,
   roleName,
   updatingUserId,
+  correlationId,
 }: {
   userId: string;
   roleName: string;
   updatingUserId: string;
+  correlationId?: string;
 }) {
   const user = await userRepository.findById(userId);
   if (!user) throw new NotFoundError('User not found');
@@ -28,5 +30,6 @@ export async function assignRoleToUser({
     targetUserId: userId,
     roleName,
     assignedBy: updatingUserId,
+    correlationId,
   });
 }

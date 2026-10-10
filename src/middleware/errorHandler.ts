@@ -3,7 +3,7 @@ import { AppError } from '../lib/errors';
 import { logger } from '../lib/logger';
 
 export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
-  const correlationId = (req as any).correlationId;
+  const correlationId = req.correlationId;
 
   // Operational error: we created this intentionally
   if (err instanceof AppError) {

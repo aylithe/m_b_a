@@ -6,10 +6,14 @@ import { logger } from '../lib/logger';
 appEvents.on('admin:role-assigned', async (data) => {
   try {
     await cacheDel(`permissions:${data.targetUserId}`);
-    logger.info('Permissions cache busted', { targetUserId: data.targetUserId });
+    logger.info('Permissions cache busted', {
+      targetUserId: data.targetUserId,
+      correlationId: data.correlationId,
+    });
   } catch (error) {
     logger.error('Failed to bust permissions cache', {
       targetUserId: data.targetUserId,
+      correlationId: data.correlationId,
       error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
     });
   }
@@ -21,6 +25,7 @@ appEvents.on('admin:role-revoked', async (data) => {
   } catch (error) {
     logger.error('Failed to bust permissions cache', {
       targetUserId: data.targetUserId,
+      correlationId: data.correlationId,
       error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
     });
   }
@@ -33,6 +38,7 @@ appEvents.on('doc:deleted', async (data) => {
   } catch (error) {
     logger.error('Failed to bust document cache', {
       documentId: data.documentId,
+      correlationId: data.correlationId,
       error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
     });
   }

@@ -3,8 +3,8 @@ import { cacheRedis } from '../lib/cache';
 import { logger } from '../lib/logger';
 
 export async function trackSuspiciousActivity(req: Request, res: Response, next: NextFunction) {
-  const userId = (req as any).user?.id;
-  const correlationId = (req as any).correlationId;
+  const userId = req.user?.id;
+  const correlationId = req.correlationId;
   if (!userId) return next();
 
   // Track unique documents accessed in last 5 minutes

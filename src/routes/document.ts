@@ -75,6 +75,7 @@ router.post(
         title,
         content,
         description,
+        correlationId: req.correlationId,
       });
 
       res.status(201).json({ success: true, data: document });
@@ -100,7 +101,7 @@ router.delete(
   requirePermissions('admin:documents:delete', 'documents:delete'),
   validate(documentParamsSchema),
   async (req: Request, res: Response, next) => {
-    await deleteDocument(String(req.params!.id), req.user!.id);
+    await deleteDocument(String(req.params!.id), req.user!.id, req.correlationId);
     res.status(200).json({ success: true, message: 'Document deleted successfully' });
   },
 );

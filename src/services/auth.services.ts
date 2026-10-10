@@ -13,7 +13,12 @@ import { UnauthorizedError } from '../lib/errors';
 
 const REFRESH_TOKEN_EXPIRATION_PERIOD = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-export async function register(data: { email: string; name: string; password: string }) {
+export async function register(data: {
+  email: string;
+  name: string;
+  password: string;
+  correlationId?: string;
+}) {
   const existing = await userRepository.findByEmail(data.email);
   if (existing) throw new Error('Email already registered');
   const passwordHash = await hashPassword(data.password);
@@ -37,12 +42,18 @@ export async function register(data: { email: string; name: string; password: st
     id: user.id,
     email: user.email,
     tier: user.tier,
+    correlationId: data.correlationId,
   });
 
   return { id: user.id, email: user.email, tier: user.tier };
 }
 
-export async function login(data: { email: string; password: string; deviceInfo?: string }) {
+export async function login(data: {
+  email: string;
+  password: string;
+  deviceInfo?: string;
+  correlationId?: string;
+}) {
   const user = await userRepository.findByEmail(data.email);
 
   if (!user || !user.isActive) {
@@ -51,6 +62,7 @@ export async function login(data: { email: string; password: string; deviceInfo?
       email: data.email,
       deviceInfo: data.deviceInfo,
       reason: 'user_not_found',
+      correlationId: data.correlationId,
     });
     throw new UnauthorizedError('Invalid credentials');
   }
@@ -61,6 +73,7 @@ export async function login(data: { email: string; password: string; deviceInfo?
       email: data.email,
       deviceInfo: data.deviceInfo,
       reason: 'wrong_password',
+      correlationId: data.correlationId,
     });
     throw new UnauthorizedError('Invalid credentials');
   }
@@ -80,6 +93,7 @@ export async function login(data: { email: string; password: string; deviceInfo?
   appEvents.emit(AUTH_EVENTS.USER_LOGGED_IN, {
     userId: user.id,
     deviceInfo: data.deviceInfo,
+    correlationId: data.correlationId,
   });
 
   return { accessToken, refreshToken, user: { id: user.id, email: user.email, tier: user.tier } };

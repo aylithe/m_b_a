@@ -6,12 +6,13 @@ const router = Router();
 
 router.post('/register', async (req, res, next) => {
   try {
+    const correlationId = req.correlationId;
     logger.info('Register request received', {
-      correlationId: (req as any).correlationId,
+      correlationId,
       email: req.body?.email,
       userAgent: req.headers['user-agent'],
     });
-    const user = await authService.register(req.body);
+    const user = await authService.register({ ...req.body, correlationId });
     res.status(201).json({ user });
   } catch (error) {
     next(error);
@@ -20,9 +21,11 @@ router.post('/register', async (req, res, next) => {
 
 router.post('/login', async (req, res, next) => {
   try {
+    const correlationId = req.correlationId;
     const result = await authService.login({
       ...req.body,
       deviceInfo: req.headers['user-agent'],
+      correlationId,
     });
     res.json(result);
   } catch (error) {

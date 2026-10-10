@@ -37,6 +37,7 @@ router.post('/users/:userId/roles', async (req, res, next) => {
       userId: req.params.userId,
       roleName,
       updatingUserId: req.user!.id,
+      correlationId: req.correlationId,
     });
 
     res.json({
@@ -64,6 +65,7 @@ router.delete('/users/:userId/roles/:roleName', async (req, res, next) => {
       targetUserId: userId,
       roleName,
       revokedBy: req.user!.id,
+      correlationId: req.correlationId,
     });
 
     res.json({

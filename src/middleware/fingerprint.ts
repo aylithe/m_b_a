@@ -15,6 +15,6 @@ export function attachFingerprint(req: Request, res: Response, next: NextFunctio
     .digest('hex')
     .substring(0, 16);
 
-  (req as any).fingerprint = fingerprint;
+  req.fingerprint = fingerprint;
   next();
 }

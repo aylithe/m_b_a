@@ -7,7 +7,7 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
   const correlationId = (req.headers['x-correlation-id'] as string) || randomUUID();
 
   // Attach to the request so other code can use it
-  (req as any).correlationId = correlationId;
+  req.correlationId = correlationId;
 
   // Add it to the response headers so the client can reference it
   res.setHeader('X-Correlation-Id', correlationId);
@@ -33,7 +33,7 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
       path: req.path,
       statusCode: res.statusCode,
       durationMs: duration,
-      userId: (req as any).user?.id,
+      userId: req.user?.id,
     };
 
     if (res.statusCode >= 500) {

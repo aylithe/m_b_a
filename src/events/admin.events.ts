@@ -21,6 +21,7 @@ appEvents.on('admin:role-assigned', async (data) => {
       assignedBy: data.assignedBy,
       targetUserId: data.targetUserId,
       roleName: data.roleName,
+      correlationId: data.correlationId,
       error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
     });
   }
@@ -44,6 +45,7 @@ appEvents.on('admin:role-revoked', async (data) => {
       revokedBy: data.revokedBy,
       targetUserId: data.targetUserId,
       roleName: data.roleName,
+      correlationId: data.correlationId,
       error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
     });
   }

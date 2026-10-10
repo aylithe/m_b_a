@@ -16,6 +16,7 @@ appEvents.on('auth:login-failed', async (data) => {
       logger.warn('Security login threshold exceeded', {
         email: data.email,
         deviceInfo: data.deviceInfo,
+        correlationId: data.correlationId,
         failures,
       });
       // Could add the IP to a temporary block list here
@@ -24,6 +25,7 @@ appEvents.on('auth:login-failed', async (data) => {
     logger.error('Failed to track login failure', {
       email: data.email,
       deviceInfo: data.deviceInfo,
+      correlationId: data.correlationId,
       error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
     });
   }

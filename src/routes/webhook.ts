@@ -10,7 +10,11 @@ router.post(
   verifyWebhookSignature(process.env.EXAMPLE_WEBHOOK_SECRET!, 'X-Webhook-Signature'),
   async (req, res) => {
     // Body is still raw bytes here — parse it manually
-    const event = JSON.parse((req as any).rawBody.toString());
+    if (!req.rawBody) {
+      return res.status(500).json({ error: 'Raw body not captured. Configure express.raw().' });
+    }
+
+    const event = JSON.parse(req.rawBody.toString());
 
     // Idempotency check
     const existing = await prisma.webhookEvent.findUnique({
@@ -39,7 +43,7 @@ router.post(
 
     // Queue the actual work
     try {
-      await processWebhookEvent(event);
+      await processWebhookEvent(event, req.correlationId);
       await prisma.webhookEvent.update({
         where: { id: event.id },
         data: { processedAt: new Date() },
@@ -48,7 +52,7 @@ router.post(
       logger.error('Webhook processing failed', {
         eventId: event.id,
         eventType: event.type,
-        correlationId: (req as any).correlationId,
+        correlationId: req.correlationId,
         error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
       });
       // Don't mark processedAt. The provider will retry.
@@ -56,7 +60,7 @@ router.post(
   },
 );
 
-async function processWebhookEvent(event: any) {
+async function processWebhookEvent(event: any, correlationId?: string) {
   // Route to the right handler based on event type
   switch (event.type) {
     case 'document.imported':
@@ -66,6 +70,7 @@ async function processWebhookEvent(event: any) {
       logger.warn('Unhandled webhook event type', {
         eventId: event.id,
         eventType: event.type,
+        correlationId,
       });
   }
 }

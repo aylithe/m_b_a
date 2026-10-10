@@ -12,7 +12,7 @@ export function verifyWebhookSignature(secret: string, headerName: string) {
     }
 
     // The body must be the RAW bytes, not parsed JSON
-    const rawBody = (req as any).rawBody;
+    const rawBody = req.rawBody;
     if (!rawBody) {
       return res.status(500).json({
         error: 'Raw body not captured. Configure express.raw().',

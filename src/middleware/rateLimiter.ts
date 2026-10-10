@@ -1,11 +1,11 @@
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
-import RedisStore from 'rate-limit-redis';
+import RedisStore, { type RedisReply } from 'rate-limit-redis';
 import { cacheRedis } from '../lib/cache';
 import { Request } from 'express';
 
 function getClientKey(req: Request): string {
-  if ((req as any).user?.id) {
-    return `user:${(req as any).user.id}`;
+  if (req.user?.id) {
+    return `user:${req.user.id}`;
   }
 
   return req.ip ? ipKeyGenerator(req.ip) : 'anonymous';
@@ -24,7 +24,8 @@ function createLimiter(options: {
     standardHeaders: true, // Send X-RateLimit-* headers
     legacyHeaders: false, // Don't send X-RateLimit-* (old format)
     store: new RedisStore({
-      sendCommand: (...args: string[]) => (cacheRedis as any).call(...args),
+      sendCommand: (...args: string[]) =>
+        cacheRedis.call(args[0], ...args.slice(1)) as Promise<RedisReply>,
     }),
     message: {
       success: false,
@@ -48,7 +49,7 @@ export const authLimiter = createLimiter({
 export const apiLimiter = createLimiter({
   windowMs: 15 * 60 * 1000,
   max: (req: Request) => {
-    const tier = (req as any).user?.tier || 'free';
+    const tier = req.user?.tier || 'free';
     const limits: Record<string, number> = {
       free: 100,
       pro: 500,
@@ -63,7 +64,7 @@ export const apiLimiter = createLimiter({
 export const uploadLimiter = createLimiter({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: (req: Request) => {
-    const tier = (req as any).user?.tier || 'free';
+    const tier = req.user?.tier || 'free';
     const limits: Record<string, number> = {
       free: 5,
       pro: 50,
@@ -78,7 +79,7 @@ export const uploadLimiter = createLimiter({
 export const chatLimiter = createLimiter({
   windowMs: 60 * 1000, // 1 minute
   max: (req: Request) => {
-    const tier = (req as any).user?.tier || 'free';
+    const tier = req.user?.tier || 'free';
     const limits: Record<string, number> = {
       free: 10,
       pro: 30,

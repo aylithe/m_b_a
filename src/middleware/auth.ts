@@ -5,7 +5,10 @@ import { verifyAccessToken } from '../lib/tokens';
 declare global {
   namespace Express {
     interface Request {
-      user?: { id: string; role: string };
+      user?: { id: string; role: string; tier?: string };
+      correlationId?: string;
+      fingerprint?: string;
+      rawBody?: Buffer;
     }
   }
 }

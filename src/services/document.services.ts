@@ -38,6 +38,7 @@ export async function createDocument(data: {
   content: string;
   description?: string;
   status?: 'pending' | 'processing' | 'ready' | 'failed';
+  correlationId?: string;
 }) {
   const doc = await documentRepository.create(data);
   appEvents.emit(DOC_EVENTS.CREATED, {
@@ -47,13 +48,15 @@ export async function createDocument(data: {
     filename: data.title.toLowerCase().replace(/\s+/g, '-'),
     content: data.content,
     status: 'pending',
+    correlationId: data.correlationId,
   });
-  const jobId = await queueDocumentForProcessing(doc.id, data.userId);
+  const jobId = await queueDocumentForProcessing(doc.id, data.userId, data.correlationId);
 
   appEvents.emit('doc:created', {
     userId: data.userId,
     documentId: doc.id,
     title: doc.title,
+    correlationId: data.correlationId,
   });
 
   // Return 202 Accepted (not 201 Created)
@@ -89,7 +92,11 @@ export async function listDocuments(userId: string, options: ListDocumentsOption
   };
 }
 
-export async function deleteDocument(documentId: string, userId: string) {
+export async function deleteDocument(
+  documentId: string,
+  userId: string,
+  correlationId?: string,
+) {
   const doc = await documentRepository.findById(documentId);
 
   if (!doc) {
@@ -110,6 +117,7 @@ export async function deleteDocument(documentId: string, userId: string) {
     userId,
     documentId: deletedDoc.id,
     title: deletedDoc.title,
+    correlationId,
   });
   return deletedDoc;
 }

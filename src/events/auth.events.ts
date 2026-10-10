@@ -32,6 +32,7 @@ appEvents.on(AUTH_EVENTS.USER_REGISTERED, async (user) => {
     logger.error('Failed to log signup', {
       userId: user.id,
       email: user.email,
+      correlationId: user.correlationId,
       error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
     });
   }
@@ -48,6 +49,7 @@ appEvents.on(AUTH_EVENTS.USER_REGISTERED, async (user) => {
     logger.error('Failed to create welcome conversation', {
       userId: user.id,
       email: user.email,
+      correlationId: user.correlationId,
       error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
     });
   }
@@ -70,6 +72,7 @@ appEvents.on(AUTH_EVENTS.USER_LOGGED_IN, async (data) => {
     logger.error('Failed to log login', {
       userId: data.userId,
       deviceInfo: data.deviceInfo,
+      correlationId: data.correlationId,
       error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
     });
   }
@@ -81,12 +84,14 @@ appEvents.on(AUTH_EVENTS.LOGIN_FAILED, async (data) => {
     logger.warn('Failed login attempt', {
       email: data.email,
       deviceInfo: data.deviceInfo,
+      correlationId: data.correlationId,
     });
     // In Week 3 we'll add rate limiting based on failed attempts
   } catch (error) {
     logger.error('Failed to log failed login', {
       email: data.email,
       deviceInfo: data.deviceInfo,
+      correlationId: data.correlationId,
       error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
     });
   }

@@ -23,9 +23,10 @@ appEvents.on(DOC_EVENTS.CREATED, async (data) => {
     });
   } catch (error) {
     logger.error('Failed to log document creation', {
-      userId: data.createdBy,
+      userId: data.userId,
       documentId: data.documentId,
       title: data.title,
+      correlationId: data.correlationId,
       error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
     });
   }
@@ -46,9 +47,10 @@ appEvents.on(DOC_EVENTS.DELETED, async (data) => {
     });
   } catch (error) {
     logger.error('Failed to log document deletion', {
-      userId: data.deletedBy,
+      userId: data.userId,
       documentId: data.documentId,
       title: data.title,
+      correlationId: data.correlationId,
       error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
     });
   }

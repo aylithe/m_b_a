@@ -9,11 +9,12 @@ import { logger } from '../lib/logger';
 const worker = new Worker(
   'document-processing',
   async (job: Job) => {
-    const { documentId, userId } = job.data;
+    const { documentId, userId, correlationId } = job.data;
     logger.info('Processing document', {
       jobId: job.id,
       documentId,
       userId,
+      correlationId,
       attempt: job.attemptsMade + 1,
     });
 
@@ -59,6 +60,7 @@ const worker = new Worker(
       appEvents.emit('doc:processed', {
         documentId,
         userId,
+        correlationId,
         chunkCount: chunks.length,
       });
 
@@ -89,6 +91,7 @@ worker.on('completed', (job) => {
     jobId: job.id,
     documentId: job.data?.documentId,
     userId: job.data?.userId,
+    correlationId: job.data?.correlationId,
     chunks: job.returnvalue?.chunks,
   });
 });
@@ -98,6 +101,7 @@ worker.on('failed', async (job, error) => {
     jobId: job?.id,
     documentId: job?.data?.documentId,
     userId: job?.data?.userId,
+    correlationId: job?.data?.correlationId,
     attempt: job?.attemptsMade,
     error: error.message,
   });
@@ -109,6 +113,7 @@ worker.on('failed', async (job, error) => {
       jobId: job.id,
       documentId: job.data?.documentId,
       userId: job.data?.userId,
+      correlationId: job.data?.correlationId,
       attempts: job.attemptsMade,
     });
 
