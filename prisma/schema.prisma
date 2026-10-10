@@ -4,11 +4,13 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider   = "postgresql"
+  extensions = [vector]
 }
 
 model User {
@@ -156,14 +158,16 @@ model Document {
 }
 
 model Chunk {
-  id         String    @id @default(uuid())
+  id         String                       @id @default(uuid())
   documentId String
-  document   Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  document   Document                     @relation(fields: [documentId], references: [id], onDelete: Cascade)
   index      Int
   content    String
   tokenCount Int
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  // Vector embedding — 1536 dimensions for text-embedding-3-small
+  embedding  Unsupported("vector(1536)")?
+  createdAt  DateTime                     @default(now())
+  updatedAt  DateTime                     @updatedAt
   deletedAt  DateTime?
   deletedBy  String?
 }
