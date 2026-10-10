@@ -13,7 +13,9 @@ export const openaiClient: AxiosInstance = axios.create({
 
 openaiClient.interceptors.request.use((config) => {
   const startTime = Date.now();
-  const configWithMeta = config as InternalAxiosRequestConfig & { metadata?: { startTime: number } };
+  const configWithMeta = config as InternalAxiosRequestConfig & {
+    metadata?: { startTime: number };
+  };
   configWithMeta.metadata = { startTime };
   logger.debug('OpenAI request sent', {
     method: config.method?.toUpperCase(),
@@ -26,8 +28,9 @@ openaiClient.interceptors.request.use((config) => {
 // Response interceptor: log timing and normalize errors
 openaiClient.interceptors.response.use(
   (response) => {
-    const startTime = (response.config as InternalAxiosRequestConfig & { metadata?: { startTime: number } })
-      .metadata?.startTime;
+    const startTime = (
+      response.config as InternalAxiosRequestConfig & { metadata?: { startTime: number } }
+    ).metadata?.startTime;
     const duration = startTime ? Date.now() - startTime : 0;
     const remaining = parseInt(response.headers['x-ratelimit-remaining-requests'] || '999');
 

@@ -92,11 +92,7 @@ export async function listDocuments(userId: string, options: ListDocumentsOption
   };
 }
 
-export async function deleteDocument(
-  documentId: string,
-  userId: string,
-  correlationId?: string,
-) {
+export async function deleteDocument(documentId: string, userId: string, correlationId?: string) {
   const doc = await documentRepository.findById(documentId);
 
   if (!doc) {
