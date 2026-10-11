@@ -170,6 +170,9 @@ model Chunk {
   updatedAt  DateTime                     @updatedAt
   deletedAt  DateTime?
   deletedBy  String?
+
+   @@index([documentId])
+   @@index([embedding], name: "Chunk_embedding_hnsw_idx")
 }
 
 model WebhookEvent {
