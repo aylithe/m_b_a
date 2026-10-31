@@ -141,7 +141,10 @@ export async function generateEmbeddingsBatchCached(
       userId,
       documentId,
       model: EMBEDDING_MODEL,
-      tokensUsed: uncached.reduce((sum, item) => sum + Math.max(1, Math.ceil(item.text.length / 4)), 0),
+      tokensUsed: uncached.reduce(
+        (sum, item) => sum + Math.max(1, Math.ceil(item.text.length / 4)),
+        0,
+      ),
       costUsd: 0,
       cached: false,
     });
