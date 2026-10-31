@@ -55,11 +55,7 @@ export function splitIntoChunks(text: string, maxTokens = 500): string[] {
   return chunkDocument(text, { maxTokens }).map((chunk) => chunk.text);
 }
 
-function recursiveSplit(
-  text: string,
-  separators: string[],
-  maxTokens: number,
-): ChunkSource[] {
+function recursiveSplit(text: string, separators: string[], maxTokens: number): ChunkSource[] {
   if (estimateTokens(text) <= maxTokens) {
     return [{ text, startChar: 0 }];
   }
@@ -109,10 +105,7 @@ function recursiveSplit(
   return [{ text, startChar: 0 }];
 }
 
-function addOverlap(
-  chunks: ChunkSource[],
-  overlapTokens: number,
-): ChunkSource[] {
+function addOverlap(chunks: ChunkSource[], overlapTokens: number): ChunkSource[] {
   if (overlapTokens === 0 || chunks.length <= 1) return chunks;
 
   return chunks.map((chunk, i) => {
